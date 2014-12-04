@@ -39,10 +39,7 @@ int main(int argc, char *argv[])
     int parent_x, parent_y, new_x, new_y;
     int sb_size = 3;
     int users_width = 15;
-    char sendbuff[SEND_SIZE] = "hello";
-    char recvbuff[RECV_SIZE] = "hi";
     int pfds[2]; // pipe fds
-    socklen_t readfds;
 
     if(pipe(pfds) == -1)
     {
@@ -63,60 +60,43 @@ int main(int argc, char *argv[])
     draw_borders(sendbox);
     draw_borders(userbox);
 
-    
-    if(!fork())
+    while(1)
     {
-        // Je suis child
-        while(1)
+        getmaxyx(stdscr, new_y, new_x);
+
+        if (new_y != parent_y || new_x != parent_x)
         {
-            fgets(sendbuff, SEND_SIZE-1, stdin);
-            write(pfds[1], sendbuff, strlen(sendbuff));
+            parent_x = new_x;
+            parent_y = new_y;
+
+            wresize(chatbox, new_y - sb_size, new_x - users_width);
+            wresize(sendbox, sb_size, new_x - users_width);
+            wresize(userbox, new_y, users_width);
+
+            // chatbox win does not need to be moved, since its origin is at 0, 0
+            mvwin(sendbox, new_y - sb_size, 0);
+            mvwin(userbox, 0, new_x - users_width);
+
+            wclear(stdscr);
+            wclear(chatbox);
+            wclear(sendbox);
+            wclear(userbox);
+
+            draw_borders(chatbox);
+            draw_borders(sendbox);
+            draw_borders(userbox);
         }
+
+        // draw to our windows
+        mvwprintw(chatbox, 1, 2, "ChatBox");
+        mvwprintw(sendbox, 1, 2, "SendBox");
+        mvwprintw(userbox, 1, 2, "UserBox");
+
+        // refresh each window
+        wrefresh(chatbox);
+        wrefresh(sendbox);
+        wrefresh(userbox);
     }
-    else
-    {
-        // Je suis Parent
-        while(1)
-        {
-            getmaxyx(stdscr, new_y, new_x);
-
-            if (new_y != parent_y || new_x != parent_x)
-            {
-                parent_x = new_x;
-                parent_y = new_y;
-
-                wresize(chatbox, new_y - sb_size, new_x - users_width);
-                wresize(sendbox, sb_size, new_x - users_width);
-                wresize(userbox, new_y, users_width);
-
-                // chatbox win does not need to be moved, since its origin is at 0, 0
-                mvwin(sendbox, new_y - sb_size, 0);
-                mvwin(userbox, 0, new_x - users_width);
-
-                wclear(stdscr);
-                wclear(chatbox);
-                wclear(sendbox);
-                wclear(userbox);
-
-                draw_borders(chatbox);
-                draw_borders(sendbox);
-                draw_borders(userbox);
-            }
-
-            
-            // draw to our windows
-            mvwprintw(chatbox, 1, 2, "ChatBox");
-            mvwprintw(sendbox, 1, 2, recvbuff);
-            mvwprintw(userbox, 1, 2, "UserBox");
-
-            // refresh each window
-            wrefresh(chatbox);
-            wrefresh(sendbox);
-            wrefresh(userbox);
-        }
-    }
-
-  endwin();
-  return 0;
-
+    endwin();
+    return 0;
 }
