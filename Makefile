@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-g -Wall -Wextra
-LDFLAGS=-lncurses
+LDFLAGS=-lncurses -lpthread
 
 all: server client win
 

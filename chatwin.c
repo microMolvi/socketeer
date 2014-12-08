@@ -3,52 +3,20 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <string.h>
+#include <pthread.h>
 
-#define SEND_SIZE 100
-#define RECV_SIZE 100
 
-void draw_borders(WINDOW *screen)
+void *sendmessage();
+
+WINDOW *chatbox, *sendbox, *userbox;
+int cbox_n = 0; //cbox line number;
+
+int main(void)
 {
-    int x, y, i;
+    int parent_x, parent_y;//, new_x, new_y;
 
-    getmaxyx(screen, y, x);
-
-    // 4 corners
-    mvwprintw(screen, 0, 0, "+");
-    mvwprintw(screen, y - 1, 0, "+");
-    mvwprintw(screen, 0, x - 1, "+");
-    mvwprintw(screen, y - 1, x - 1, "+");
-
-    // sides
-    for (i = 1; i < (y - 1); i++)
-    {
-        mvwprintw(screen, i, 0, "|");
-        mvwprintw(screen, i, x - 1, "|");
-    }
-
-    // top and bottom
-    for (i = 1; i < (x - 1); i++)
-    {
-        mvwprintw(screen, 0, i, "-");
-        mvwprintw(screen, y - 1, i, "-");
-    }
-}
-
-int main(int argc, char *argv[])
-{
-    int parent_x, parent_y, new_x, new_y;
     int sb_size = 3;
     int users_width = 15;
-    char sendbuff[SEND_SIZE] = "hello";
-    char recvbuff[RECV_SIZE] = "hi";
-    int pfds[2]; // pipe fds
-    socklen_t readfds;
-
-    if(pipe(pfds) == -1)
-    {
-        perror("pipe");
-        exit(1);
-    }
     initscr();
     noecho();
     curs_set(FALSE);
@@ -56,67 +24,70 @@ int main(int argc, char *argv[])
     // set up initial windows
     getmaxyx(stdscr, parent_y, parent_x);
 
-    WINDOW *chatbox = newwin(parent_y - sb_size, parent_x - users_width, 0, 0);
-    WINDOW *sendbox = newwin(sb_size, parent_x - users_width, parent_y - sb_size, 0);
-    WINDOW *userbox = newwin(parent_y, users_width, 0, parent_x - users_width);
-    draw_borders(chatbox);
-    draw_borders(sendbox);
-    draw_borders(userbox);
+    // getting ourselves some windows to work on
+    chatbox = newwin(parent_y - sb_size, parent_x - users_width, 0, 0);
+    sendbox = newwin(sb_size, parent_x - users_width, parent_y - sb_size, 0);
+    userbox = newwin(parent_y, users_width, 0, parent_x - users_width);
 
-    
-    if(!fork())
+    scrollok(chatbox, TRUE); // Allows the chatbox to scroll
+    int maxy, maxx;
+    getmaxyx(chatbox, maxy, maxx);
+    wsetscrreg(chatbox, 1, maxy-2); // Sets the scrolling region
+
+    box(chatbox, '|', '-');
+    box(sendbox, '|', '-');
+    box(userbox, '|', '-');
+
+    wrefresh(chatbox);
+    wrefresh(sendbox);
+    wrefresh(userbox);
+
+    // Set up threads
+    pthread_t sender;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+
+    // Spawn the listen/receive deamons
+    pthread_create(&sender, &attr, sendmessage, NULL);
+
+    while(1);
+
+    //lel
+    endwin();
+    return 0;
+}
+
+// Send message from keyboard to server and update screen
+void *sendmessage()
+{
+    int maxy, maxx;
+    getmaxyx(chatbox, maxy, maxx);
+
+    char str[80];
+
+    while(1)
     {
-        // Je suis child
-        while(1)
+        // Get user's message
+        echo();
+        mvwgetstr(sendbox, 1, 1, str);
+        noecho();
+        wclear(sendbox);
+        box(sendbox, '|', '-');
+        wrefresh(sendbox);
+
+        // write it in chatbox
+        if(cbox_n != maxy - 2)
         {
-            fgets(sendbuff, SEND_SIZE-1, stdin);
-            write(pfds[1], sendbuff, strlen(sendbuff));
+            cbox_n++;
         }
-    }
-    else
-    {
-        // Je suis Parent
-        while(1)
+        else
         {
-            getmaxyx(stdscr, new_y, new_x);
-
-            if (new_y != parent_y || new_x != parent_x)
-            {
-                parent_x = new_x;
-                parent_y = new_y;
-
-                wresize(chatbox, new_y - sb_size, new_x - users_width);
-                wresize(sendbox, sb_size, new_x - users_width);
-                wresize(userbox, new_y, users_width);
-
-                // chatbox win does not need to be moved, since its origin is at 0, 0
-                mvwin(sendbox, new_y - sb_size, 0);
-                mvwin(userbox, 0, new_x - users_width);
-
-                wclear(stdscr);
-                wclear(chatbox);
-                wclear(sendbox);
-                wclear(userbox);
-
-                draw_borders(chatbox);
-                draw_borders(sendbox);
-                draw_borders(userbox);
-            }
-
-            
-            // draw to our windows
-            mvwprintw(chatbox, 1, 2, "ChatBox");
-            mvwprintw(sendbox, 1, 2, recvbuff);
-            mvwprintw(userbox, 1, 2, "UserBox");
-
-            // refresh each window
-            wrefresh(chatbox);
-            wrefresh(sendbox);
-            wrefresh(userbox);
+            scroll(chatbox);
         }
+
+        mvwprintw(chatbox, cbox_n, 1, str);
+        box(chatbox, '|', '-');
+        wrefresh(chatbox);
     }
-
-  endwin();
-  return 0;
-
 }

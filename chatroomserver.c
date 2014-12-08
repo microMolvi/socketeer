@@ -23,7 +23,7 @@
 #define BACKLOG 5
 #define PORT    "3199"
 
-int main( int argc, char * argv[] )
+int main(void)
 {
     struct addrinfo hints, *p, *res;
     int sd, nsd; //socket, new socket
