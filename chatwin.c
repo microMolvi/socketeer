@@ -34,9 +34,9 @@ int main(void)
     getmaxyx(chatbox, maxy, maxx);
     wsetscrreg(chatbox, 1, maxy-2); // Sets the scrolling region
 
-    box(chatbox, '|', '-');
-    box(sendbox, '|', '-');
-    box(userbox, '|', '-');
+    box(chatbox, 0, 0);
+    box(sendbox, 0, 0);
+    box(userbox, 0, 0);
 
     wrefresh(chatbox);
     wrefresh(sendbox);
@@ -73,7 +73,7 @@ void *sendmessage()
         mvwgetstr(sendbox, 1, 1, str);
         noecho();
         wclear(sendbox);
-        box(sendbox, '|', '-');
+        box(sendbox, 0, 0);
         wrefresh(sendbox);
 
         // write it in chatbox
@@ -87,7 +87,7 @@ void *sendmessage()
         }
 
         mvwprintw(chatbox, cbox_n, 1, str);
-        box(chatbox, '|', '-');
+        box(chatbox, 0, 0);
         wrefresh(chatbox);
     }
 }
