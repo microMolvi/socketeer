@@ -16,12 +16,10 @@
 #define PORT argv[2]
 
 void *getnsend(void *client);
+void *recvnput(void *client);
 
 WINDOW *chatbox, *sendbox, *userbox;
 int cbox_n = 0; //cbox line number;
-
-char recvbytes[256];
-int nbytes;
 
 struct client_data
 {
@@ -139,20 +137,76 @@ int main(int argc, char** argv)
     wrefresh(sendbox);
     wrefresh(userbox);
 
-    // Set up threads
-    pthread_t sender;
+    ////////////////////////////////
+    // Thread Initialization Code //
+    ////////////////////////////////
+
+    pthread_t sender, recver;
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-    // Spawn the listen/receive deamons
+    // Spawning send & recv threads
     pthread_create(&sender, &attr, getnsend, (void *)client);
+    pthread_create(&recver, &attr, recvnput, (void *)client);
 
     while(1);
 
     //lel
     endwin();
     return 0;
+}
+
+void *recvnput(void *client)
+{
+    char str[100]; // username: + recv_str
+    char recv_str[80];
+
+    int maxy, maxx;
+    getmaxyx(chatbox, maxy, maxx);
+
+    struct client_data cd = *(struct client_data *)client;
+
+    int nbytes;
+
+    while(1)
+    {
+        if((nbytes = recv(cd.sockd, recv_str, sizeof(recv_str), 0)) <= 0)
+        {
+            if(nbytes == 0)
+            {
+                printf("server is gone!!\n");
+            }
+            else
+            {
+                perror("recv:");
+                exit(5);
+            }
+        }
+        else
+        {
+            recv_str[nbytes] = '\0'; // Terminating received string
+
+            // Append username to str
+            strcpy(str, recv_str);
+            //strcat(str, ": ");
+            //strcat(str, recv_str);
+
+            // Update Chatbox
+            if(cbox_n != maxy - 2)
+            {
+                cbox_n++; // move to next line before every new message
+            }
+            else
+            {
+                scroll(chatbox); // Scroll when chatbox is full
+            }
+
+            mvwprintw(chatbox, cbox_n, 1, str);
+            box(chatbox, 0, 0);
+            wrefresh(chatbox);
+        }
+    }
 }
 
 // Get input from user and send to the server
