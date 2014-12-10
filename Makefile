@@ -2,16 +2,13 @@ CC=gcc
 CFLAGS=-g -Wall -Wextra
 LDFLAGS=-lncurses -lpthread
 
-all: server client win
+all: server client
 
 server:
-	$(CC) $(CFLAGS) chatroomserver.c -o chatroomserver
+	$(CC) $(CFLAGS) socketeers.c -o socketeers
 
 client:
-	$(CC) $(CFLAGS) chatroomclient.c -o chatroomclient
-
-win:
-	$(CC) $(CFLAGS) $(LDFLAGS) chatwin.c -o chatwin
+	$(CC) $(CFLAGS) $(LDFLAGS) socketeerc.c -o socketeerc
 
 clean:
-	rm -rf chatroomserver chatroomclient chatwin
+	rm socketeers socketeerc
