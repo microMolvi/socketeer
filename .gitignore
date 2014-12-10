@@ -1,3 +1,6 @@
+*.swp
+socketeers
+socketeerc
 chatwin
 chatroomserver
 chatroomclient
