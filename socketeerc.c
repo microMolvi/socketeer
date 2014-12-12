@@ -241,11 +241,12 @@ void *getnsend(void *client)
         box(sendbox, 0, 0);
         wrefresh(sendbox);
 
+        // #TODO
+        // Remove username appending code
         // Append username to str
         strcpy(str, cd.username);
         strcat(str, ": ");
         strcat(str, send_str);
-
 
         // Send to the rest of the world
         if((send(cd.sockd, str, strlen(str), 0) == -1))
@@ -253,6 +254,9 @@ void *getnsend(void *client)
             perror("send");
         }
 
+        // #TODO Do not update chatbox
+        // instead server should echo back the same message
+        // this way we can check if the message reached server
         // Update Chatbox
         if(cbox_n != maxy - 2)
         {

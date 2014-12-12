@@ -23,6 +23,13 @@
 #define BACKLOG 5
 #define PORT    "3199"
 
+struct client
+{
+    int sockd;
+    char *username;
+    struct client *next;
+};
+
 int main(void)
 {
     struct addrinfo hints, *p, *res;
@@ -122,13 +129,18 @@ int main(void)
                     }
                     else
                     {
+                        // #TODO
+                        // add client connection code here
+                        // send client 'tell-username' message
+                        // proceed and add to database only
+                        // if username is not already taken
+                        // close otherwise
                         FD_SET(nsd, &mS);
                         if(nsd > fdmax)
                         {
                             fdmax = nsd;
                         }
                     }
-                    //send(nsd, str2send, strlen(str2send), 0);
                 }
                 else
                 {
@@ -144,6 +156,11 @@ int main(void)
                             perror("recv");
                         }
                         close(i);
+                        // #TODO
+                        // Add userbox code
+                        // for client disconnection
+                        // a. remove clients data from the linked list
+                        // b. broadcast userbox update message
                         FD_CLR(i, &mS);
                     }
                     else
@@ -154,10 +171,14 @@ int main(void)
                             {
                                 if(j == i || j == sd)
                                 {
+                                    // #TODO
+                                    // enable code to echo back to the client
                                     continue;
                                 }
                                 else
                                 {
+                                    // #TODO
+                                    // append username here
                                     if((send(j, recvdata, recvbytes, 0) == -1))
                                     {
                                         perror("send");
