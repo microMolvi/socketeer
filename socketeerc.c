@@ -113,6 +113,8 @@ int main(int argc, char** argv)
     int sb_size = 3;
     int users_width = 15;
     initscr();
+    start_color(); // enable color
+    init_pair(1, COLOR_BLACK, COLOR_CYAN); // setting foreground and background
     noecho();
     curs_set(FALSE);
 
@@ -128,11 +130,17 @@ int main(int argc, char** argv)
     maxy = getmaxy(chatbox);
     wsetscrreg(chatbox, 1, maxy-2); // Sets the scrolling region
 
+    //Assigning window colors
+    wbkgd(chatbox, COLOR_PAIR(1));
+    wbkgd(sendbox, COLOR_PAIR(1));
+    wbkgd(userbox, COLOR_PAIR(1));
+
     // Default borders
     box(chatbox, 0, 0);
     box(sendbox, 0, 0);
     box(userbox, 0, 0);
 
+    // Render All
     wrefresh(chatbox);
     wrefresh(sendbox);
     wrefresh(userbox);
@@ -157,6 +165,8 @@ int main(int argc, char** argv)
     return 0;
 }
 
+// Receive messages from the server
+// Display messages in the chatbox
 void *recvnput(void *client)
 {
     char str[100]; // username: + recv_str
