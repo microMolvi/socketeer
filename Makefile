@@ -2,8 +2,6 @@ CC=gcc
 CFLAGS=-g -Wall -Wextra
 LDFLAGS=-lncurses -lpthread
 
-DESTDIR=./SOCKETEER
-
 all: server client
 
 server:
