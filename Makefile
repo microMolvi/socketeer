@@ -1,6 +1,6 @@
-CC=${CC}
-CFLAGS=${CFLAGS}" -g -Wall -Wextra"
-LDFLAGS=${LDFLAGS}" -lncurses -lpthread"
+#CC=${CC}
+#CFLAGS=-g -Wall -Wextra"
+#LDFLAGS=-lncurses -lpthread"
 
 all: server client
 
