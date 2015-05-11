@@ -13,8 +13,8 @@ client:
 	$(CC) $(CFLAGS) socketeerc.c -o socketeerc $(LDFLAGS)
 
 install:
-        install -D socketeers ${DESTDIR}/socketeers
-        install -D socketeerc ${DESTDIR}/socketeerc
+	install -D socketeers ${DESTDIR}/socketeers
+	install -D socketeerc ${DESTDIR}/socketeerc
 
 clean:
 	rm socketeers socketeerc
