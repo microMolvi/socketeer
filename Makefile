@@ -8,7 +8,7 @@ server:
 	$(CC) $(CFLAGS) socketeers.c -o socketeers
 
 client:
-	$(CC) $(CFLAGS) $(LDFLAGS) socketeerc.c -o socketeerc
+	$(CC) $(CFLAGS) socketeerc.c -o socketeerc $(LDFLAGS)
 
 clean:
 	rm socketeers socketeerc
