@@ -5,7 +5,7 @@ LDFLAGS=-lncurses -lpthread
 all: server client
 
 server:
-	$(CC) $(CFLAGS) socketeers.c -o socketeers
+	$(CC) $(CFLAGS) socketeers.c -o socketeers $(LDFLAGS)
 
 client:
 	$(CC) $(CFLAGS) socketeerc.c -o socketeerc $(LDFLAGS)
